@@ -604,13 +604,13 @@ $('#friends').click( function () {
 	friends();
 	this.style.pointerEvents = 'auto';
 });
-/
-/--------------------EXECUTIONS---------------------
+//--------------------EXECUTIONS---------------------
 $(document).ready(function() {
 	$.ajaxSetup({ cache: true });
 	$.getScript('//connect.facebook.net/en_US/sdk.js', function(){
 		FB.init({
-			appId	: '100308213652145',
+			// appId	: '100308213652145',
+			appId	: '100543873628579', // Test app
 			xfbml	: false,
 			status	: true,
 			cookie	: true,
