@@ -1,0 +1,243 @@
+@-moz-keyframes loader {
+	0% {-moz-transform: rotate(0deg);transform: rotate(0deg);}
+	100% {-moz-transform: rotate(360deg);transform: rotate(360deg);}
+}
+@-webkit-keyframes loader {
+	0% {-webkit-transform: rotate(0deg);transform: rotate(0deg);}
+	100% {-webkit-transform: rotate(360deg);transform: rotate(360deg);}
+}
+@keyframes loader {
+	0% {-moz-transform: rotate(0deg);-ms-transform: rotate(0deg);
+		-webkit-transform: rotate(0deg);transform: rotate(0deg);
+	}
+	100% {-moz-transform: rotate(360deg);-ms-transform: rotate(360deg);
+		-webkit-transform: rotate(360deg);transform: rotate(360deg);
+	}
+}
+body{ 
+	margin:0; 
+	background: url('img/Wood_floor.jpg') #E4BB72;
+	font-family: Open Sans, Verdana, sans-serif;
+1}
+#loader, #loadingAlbums {
+	position: fixed;
+	top: 50%;	
+	right: 50%;
+}
+#loader{
+	-moz-animation: loader 1250ms infinite linear;
+	-webkit-animation: loader 1250ms infinite linear;
+	animation: loader 1250ms infinite linear;
+	border: 10px solid hsl(250, 5%, 74%);
+	border-right-color: hsla(0, 0%, 0%, 0);
+	border-radius: 32px;
+	box-sizing: border-box;
+	width: 64px;
+	height: 64px;
+	margin-top: -32px;
+	margin-right: -32px;
+}
+#loadingAlbums {
+	width: 180px;
+	height: 30px;
+	line-height: 30px;
+	text-align: center;
+	margin-top: -15px;
+	margin-right: -90px;
+}
+#container {
+	position:relative; 
+	height:100vh; 
+	overflow:hidden;
+}
+#fbBtnWr {
+	position: fixed; 
+	width: 400px; 
+	top: 50%; 
+	left: 50%; 
+	margin: -50px -200px; 
+	text-align: center; 
+	color: #4D4D4D; 
+	font-size: 14px;
+}
+#container div { 
+	position: absolute; 
+	-webkit-transition-property: -webkit-transform, left, top;
+	-moz-transition-property: -moz-transform, left, top;
+	-o-transition-property: -o-transform, left, top;
+	-ms-transition-property: -ms-transform, left, top;
+	transition-property: transform, left, top;
+	transition-duration: 3s;
+	-webkit-transition-duration: 3s; /* Safari */
+}
+#container canvas {
+	display:none; 
+	position:absolute; 
+	top: 50%;
+	left: 50%;
+	margin-top: -180px;
+	margin-left: -130px;
+	box-shadow: 0 0px 12px rgba(0, 0, 0, 0.4);
+}
+#container img {display:block; position:absolute; top:0px; left:0px; box-shadow: 0 0px 12px rgba(0, 0, 0, 0.4); }
+
+/*Overlay transparent background*/
+#blackout {width: 100%; height: 100%; position: fixed; background: rgba(0, 0, 0, 0.6); top: 0; left: 0;}
+
+/*---AlbumChoose y FriendsChoose---*/
+.panelChoose {position: fixed; bottom: 8px; right: 46px; background: rgba(0, 0, 0, 0.6); border-radius: 12px; line-height: 0px;}
+.panelChoose .divPhoto { display: inline-block; position: relative; cursor: pointer; overflow: hidden; margin: 6px; }
+.panelChoose .divPhoto div:first-child {
+	width: 100px;
+	height: 100px;
+	border-radius: 8px;
+	background-position: center 25%;
+}
+.panelChoose .divPhoto div:nth-child(2){
+	width: 100px;
+	height: 100px;
+	border-radius: 8px;
+	position: absolute;
+	top: 0;
+	background-color: rgba(0, 0, 0, 0.6);
+}
+.panelChoose .albumSelected {display: none;}
+.panelChoose .albumNotSelected {display: block;}
+.panelChoose .divPhoto span {
+	width: 100%;
+	display: block;
+	text-align: center;
+	font: 10pt normal Arial, sans-serif;
+	background-color: rgba(0, 0, 0, 0.8);
+	position: absolute;
+	color: #FFF;
+	-webkit-transition: all 300ms ease-out;
+	-moz-transition: all 300ms ease-out;
+	-o-transition: all 300ms ease-out;
+	-ms-transition: all 300ms ease-out;
+	transition: all 300ms ease-out;
+}
+.panelChoose .divPhoto:hover span {  
+    -webkit-transform: translateY(-100%); 
+    -moz-transform: translateY(-100%);  
+    -o-transform: translateY(-100%);  
+    transform: translateY(-100%);  
+}  
+.panelChoose>div:last-child {
+	text-align: center;
+	display: block;
+	margin: 4px auto 10px;
+	cursor: auto;
+}
+
+/*Buttons of Album Choose Panel(Accept or Cancel)*/
+.BtnChoose {
+	cursor: pointer;
+	display: inline-block;
+	height: 33px;
+	width: 130px;
+	background: #9CA09D;
+	border-radius: 3px;
+	color: #666;
+	text-align: center;
+	font-size: 21px;
+	margin: 0 20px;
+	line-height: 30px;
+}
+.BtnChoose:hover{background: #DDD;}
+.BtnChoose:active { background: #F0E996; }
+
+
+/*---FriendsChoose Panel---*/
+#friendsChoose{position: fixed; bottom: 8px; right: 46px; background: rgba(0, 0, 0, 0.6); border-radius: 12px; line-height: 0px}
+
+
+/*---Controls Menu---*/
+#controls { 
+	position: fixed; 
+	bottom: 46px;
+	right: 0px;
+	background-color: rgba(0, 0, 0, 0.8); 
+	border-radius: 9px;
+	box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.4);
+	display: none;
+}
+.showControls #controls{display: block;}
+#controls>div { 
+	cursor: pointer;
+	position: relative;
+	height: 30px;
+	width: 30px;
+	padding: 8px;
+	border-radius: 6px;
+	background-size: 80%;
+	background-image: url(img/sprites.png);
+	background-size: auto;
+}
+#controls>div:hover { background-color: #666;}
+#controls>div:active { background-color: #F0E996; }
+
+/*---Caption of buttons---*/
+#toggleControls:after, #controls>div:after {
+	content: attr(data-title);
+	display: none;
+	border: 1px solid #666;
+	border-radius: 2px;
+	background-color: rgba(170, 170, 170, 0.9);
+	box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+	padding: 3px 5px;
+	color: #000;
+	font: 16px/16px normal;
+	position: absolute;
+	right: 53px;
+	top: 50%;
+	margin-top: -19px;
+}
+#toggleControls:hover:after, #controls>div:hover:after {display:block;}
+
+/*---Controls backgrounds---*/
+#play {background-position: 0px -46px;}
+#play:hover {background-position: -46px -46px;}
+#play.flipped {background-position: 92px 0px;}
+#play.flipped:hover{background-position: 46px 0px;}
+
+#restart {background-position: 92px -46px;}
+#restart:hover {background-position: 46px -46px;}
+
+#fullScreen {background-position: 0px -92px;}
+#fullScreen:hover {background-position: -46px -92px;}
+#fullScreen.flipped {background-position: 92px -92px;}
+#fullScreen.flipped:hover {background-position: 46px -92px;}
+
+#polaroid {background-position: 0px 92px;}
+#polaroid:hover {background-position: -46px 92px;}
+#polaroid.flipped {background-position: 92px 92px;}
+#polaroid.flipped:hover {background-position: 46px 92px;}
+
+#filterAlbum {background-position: 0px 46px;}
+#filterAlbum:hover {background-position: -46px 46px;}
+
+#friends {background-position: 92px 46px;}
+#friends:hover {background-position: 46px 46px;}
+
+#toggleControls {
+	cursor: pointer;
+	position: fixed;
+	bottom: 0px; 
+	right: 0px; 
+	height: 30px; 
+	width: 30px; 
+	padding: 8px; 
+	border-radius: 9px;
+	box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.4);
+	background-image: url(img/sprites.png);
+	background-size: auto;
+	background-color: rgba(255, 255, 255, 0.33);
+	background-position: 0px 0px;
+}
+#toggleControls :hover {	 background-position: -46px 0px; background-color: rgba(204, 204, 204, 0.75);}
+.showControls #toggleControls {	background-position: -46px 0px; background-color: rgba(100, 100, 100, 0.3);}
+.showControls #toggleControls:hover { background-position: 0px 0px; background-color: rgba(255, 255, 255, 0.33);}
+
+/* Hover le quita fluidez a la animacion
+img:hover {	z-index: 9000;	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7);	-webkit-transform: scale(1.2) !important; }*/
