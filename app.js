@@ -236,7 +236,7 @@ function FfriendsAccept(){
 	}
 
 	if(fbListSaved){
-		makeList();
+		makePhotoList();
 	}else{
 		$loader.show();
 		$loadingAlbums.hide();
@@ -348,17 +348,18 @@ function login(){
 //Saca albums
 var allFbList = []; // to save all fbList downloaded
 var fbList = []; // to save all albums and photo data
-var nAl = 0; // number of album data currently requesting
-var alParams = '/albums?fields=name,id,cover_photo, count, type&limit=25'; // to get albums
-var phParams = '/photos?fields=id,source,width,height&limit=25' // to get photos
-
+var nAl = 0; // number of album of photo data currently requesting
+// var alParams = '/?fields=name,id,cover_photo, count, type&limit=25'; // to get albums
+// var phParams = '/?fields=photos.limit(25){id,images,width,height}'; // to get photos
+var alParams = {fields: 'albums.limit(25){name,id,cover_photo,count,type,picture}'}; // to get albums
+var phParams = {fields: 'photos.limit(25){id,images,width,height}'}; // to get photos
 function appInit(response){
 	$('#fbLoginBtn').hide(); 
 	$loader.show();
 	friendList[0][0] = response.authResponse.userID;
 	accessToken = response.authResponse.accessToken;
 	window.firstGetAlbum = true;
-	getAlbums(alParams);
+	getAlbumsData(alParams);
 }
 function orderFbList () { // sort albums: [Profile, 2,3,4..., Timeline, Cover]
 	var a, y, z, ar = [];
@@ -367,72 +368,80 @@ function orderFbList () { // sort albums: [Profile, 2,3,4..., Timeline, Cover]
 			case 'profile': a = v; break;
 			case 'wall': y = v; break;
 			case 'cover': z = v; break;
-			default: ar.push(v);
+			default: if (v.count) {ar.push(v);}
 		}
 	});
 	ar.unshift(a); ar.push(y,z);
 	fbList = ar;
 }
-function getAlbums (params) {
-	FB.api( '/' + friendList[nFrSelected][0] + params,  function(albums) {
+function getAlbumsData (params) {
+	FB.api( '/' + friendList[nFrSelected][0], params,  function(res) {
+		if(!res.albums){alert('connection error'); return;};
+		res = res.albums;
 		if(firstGetAlbum){
 			firstGetAlbum = false;
 			$loader.hide();
 			$loadingAlbums.show();
-			$('#infoLoad2').text(albums.data.length);
 		}
-		if (albums.data && albums.data.length){ 
-			fbList.concat(albums.data);
-			if (albums.paging && albums.paging.next){ // next page
-				getAlbums(alParams+'&after='+albums.paging.cursors.after);}
+		$('#infoLoad2').text(Number($('#infoLoad2').text())+res.data.length);
+		if (res.data && res.data.length){ 
+			fbList = fbList.concat(res.data);
+			if (res.paging && res.paging.next){ // next page
+				var newAlParams = JSON.parse(JSON.stringify(alParams));
+				newAlParams.after = res.paging.cursors.after;
+				getAlbumsData(newAlParams);}
 			else { // no more pages
 				orderFbList();
-				getPhotos(phParams);
+				getPhotosData(phParams);
 			}
-		} else { alert('connection error');}
+		}
 	});
 }
+function proccessPhotoData (data) {
+	for (var i = 0, photo, ar, w, h; i < photos.data.length; i++){
+		photo = data[i];
+		//if it's album cover save url
+		if (fbList[nAl].cover_photo.id == photo.id){
+			fbList[nAl].cover_photo.src = modUrl(photo.source,"p100x100");}
+		ar = {}; w = photo.width; h = photo.height;
+		ar.src = modUrl(photo.source,"s320x320");
+		//Resize photo size to fit 320x320
+		if(w >= h){ar.width = 320; ar.height = Math.floor((320/w)*h);}
+		else{ar.width = Math.floor((320/h)*w); ar.height = 320;}
+		fbList[nAl].photos.push(ar); // save photo data to album item
+	}
+}
 //Saca fotos
-function getPhotos(params){
+function getPhotosData(params){
 	if(nAl < fbList.length){
-		FB.api('/'+fbList[nAl][0]+params, function(photos){
-			if (photos.data && photos.data.length){
-				if (!fbList[nAl][3]) {fbList[nAl][3] = [];} // if new photo request otherwise it's paging
-				for (var i = 0, photo, ar, w, h; i < photos.data.length; i++){
-					photo = photos.data[i];
-					//if it's album cover save url
-					if (fbList[nAl][2] == photo.id){ fbList[nAl][2] = modUrl(photo.source,"p100x100");}
-					ar = []; w = photo.width; h = photo.height;
-					ar[0] = modUrl(photo.source,"s320x320");
-					//Resize photo size to fit 320x320
-					if(w >= h){ar[1] = 320; ar[2] = Math.floor((320/w)*h);}
-					else{ar[1] = Math.floor((320/h)*w); ar[2] = 320;}
-					fbList[nAl][3].push(ar); // save photo data to album item
-				}
-				if (photos.paging && photos.paging.next){
-					getPhotos(phParams+'&after='+photos.paging.cursors.after);
-				} else {
-					nAl++;
-					$('#infoLoad1').text(nAl);
-					getPhotos(phParams);
-				}
-			} else {
-				nAl++;
-				$('#infoLoad1').text(nAl);
-				getPhotos(phParams);
-			}
+		FB.api('/'+fbList[nAl].id, params, function(photos){
+			// if(!res.albums){alert('connection error'); return;};
+			// res = res.albums;
+			// if (photos.data && photos.data.length){
+			// 	if (!fbList[nAl].photos) {fbList[nAl].photos = [];} // if new photo request otherwise it's paging
+			// 	proccessPhotoData(photos.data);
+			// 	if (photos.paging && photos.paging.next){ // next page
+			// 		getPhotosData(phParams+'&after='+photos.paging.cursors.after);
+			// 	} else { // no more pages
+			// 		$('#infoLoad1').text(++nAl);
+			// 		getPhotosData(phParams);
+			// 	}
+			// } else {
+			// 	$('#infoLoad1').text(++nAl);
+			// 	getPhotosData(phParams);
+			// }
 		});
 	} else {
 		// if (newFriend == 1 && !fbListSaved) {
 		// 	allFbList.push({ fbList:fbList, id:friendList[nFrSelected][0], name:friendList[nFrSelected][1] });
 		// }
-		makeList();
+		// makePhotoList();
 	}
 }
 
 //Crea la lista de fotos
 var list = []; // to save photos data (url, width, height, final position x, y and rotation)
-function makeList(){
+function makePhotoList(){
 	for (var i = 0; i < fbList.length - 2; i++) { // Initially without two last albums
 		for (var j = 0; j < fbList[i][3].length; j++) {
 			list.push(fbList[i][3][j]);
