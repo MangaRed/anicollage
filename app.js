@@ -616,8 +616,8 @@ $(document).ready(function() {
 	$.ajaxSetup({ cache: true });
 	$.getScript('//connect.facebook.net/en_US/sdk.js', function(){
 		FB.init({
-			// appId	: '100308213652145',
-			appId	: '100543873628579', // Test app
+			appId	: '100308213652145',
+			// appId	: '100543873628579', // Test app
 			xfbml	: true,
 			status	: true,
 			cookie	: true,
