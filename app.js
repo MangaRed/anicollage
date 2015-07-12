@@ -25,8 +25,8 @@ Array.prototype.shuffle = function(start, end){ // Desordena una parte o todo de
 //--------HELPERS---------
 //Reemplaza 'http' por 'https' y modifica o agrega 's320x320'
 function modUrl(url,size){ //size: s320x320 ó p200x200
-	url = url.replace('/http:\/\//', '//');
-	if(url.search(/\/s\d{3}x\d{3}\//) != -1) {url = url.replace(/\/s\d{3}x\d{3}\//, "/"+size+"/");}
+	url = url.replace('/^https?\:/', '');
+	if(url.search(/\/(s|p)\d{3}x\d{3}\//) != -1) {url = url.replace(/\/(s|p)\d{3}x\d{3}\//, "/"+size+"/");}
 	else{url = url.replace(/\/(?!.*\/)/, "/"+size+"/");}
 	return url;
 }
@@ -68,36 +68,20 @@ function restart () {
 	$container.empty();
 	n=0;
 	list.shuffle();
-	Superlist();
+	extendList();
 }
 function fullScreen () {
 	if (document.documentElement.requestFullscreen) {document.documentElement.requestFullscreen();}
 	else if (document.documentElement.mozRequestFullScreen) {document.documentElement.mozRequestFullScreen();}
 	else if (document.documentElement.webkitRequestFullscreen) {document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);}
-	fullScreenBtn_isNormal();
 }
 function normalScreen(){
 	if (document.cancelFullScreen) {document.cancelFullScreen();}
 	else if (document.mozCancelFullScreen) {document.mozCancelFullScreen();}
 	else if (document.webkitCancelFullScreen) {document.webkitCancelFullScreen();}	
-	fullScreenBtn_is();
 }
-function polaroid () {
-	//canvas = document.styleSheets[0]['cssRules'][1]
-	//img = document.styleSheets[0]['cssRules'][2]
-	$(this).css('pointer-events','none');
-	document.styleSheets[0]['cssRules'][2].style.display = "none";
-	document.styleSheets[0]['cssRules'][1].style.display = "block";
-	polaroidBtn_isNormal();
-	$(this).css('pointer-events','auto');
-}
-function noPolaroid () {
-	$(this).css('pointer-events','none');
-	document.styleSheets[0]['cssRules'][1].style.display = "none";
-	document.styleSheets[0]['cssRules'][2].style.display = "block";
-	polaroidBtn_is();
-	$(this).css('pointer-events','auto');
-}
+function polaroid () {document.body.classList.add('showPolaroid');}
+function noPolaroid () {document.body.classList.remove('showPolaroid');}
 //---funciones de Album Choose---
 var nAlPic = 0;
 var listAlchecked = new Array();
@@ -126,7 +110,7 @@ function FchooseAccept(){
 		n=0;
 		list = listTmp;
 		list.shuffle(); //Desordena la lista
-		Superlist();
+		extendList();
 		$blackout.hide();
 		$albumChoose.hide();
 	}
@@ -243,16 +227,16 @@ function FfriendsAccept(){
 
 	//Comprobar si fbList del amigo esta grabado
 	fbListSaved = false;
-	for (var i = 0; i < AllFbList.length; i++) {
-		if(AllFbList[i].id == friendList[nFrSelected][0]){
-			fbList = AllFbList[i].fbList;
+	for (var i = 0; i < allFbList.length; i++) {
+		if(allFbList[i].id == friendList[nFrSelected][0]){
+			fbList = allFbList[i].fbList;
 			fbListSaved = true;
 			break;
 		}
 	}
 
 	if(fbListSaved){
-		makelist();
+		makeList();
 	}else{
 		$loader.show();
 		$loadingAlbums.hide();
@@ -267,9 +251,8 @@ function FfriendsCancel () {
 }
 
 //Hacer lista de amigos
-var friendList = new Array();
-friendList[0] = new Array(); //1º amigo es el usuario, aun no se consigue el id
-friendList[0][1] = 'Yo';
+var friendList = [ [ ] ]; //1º amigo es el usuario, aun no se consigue el id
+friendList[0][1] = 'Me';
 function getFriendList(){
 	FB.api('me/friends?fields=name,id&limit=5000',  function(friendsJSON) {
 				for (var i=0; i < friendsJSON.data.length; i++){
@@ -357,108 +340,119 @@ function login(){
 		else { // status = not autorized
 			FB.login( function(response) { // Mostrar dialogo de permisos
 				if (response.authResponse) {appInit(response);}
-			}, {scope: 'user_photos,friends_photos'});
+			}, {scope: 'user_photos, user_friends'});
 		}
 	});
 }
 
 //Saca albums
-var AllFbList = new Array(); //Guardará todos los fbList descargados, para no volverlos a cargar
-var fbList = new Array();
+var allFbList = []; // to save all fbList downloaded
+var fbList = []; // to save all albums and photo data
+var nAl = 0; // number of album data currently requesting
+var alParams = '/albums?fields=name,id,cover_photo, count, type&limit=25'; // to get albums
+var phParams = '/photos?fields=id,source,width,height&limit=25' // to get photos
+
 function appInit(response){
 	$('#fbLoginBtn').hide(); 
 	$loader.show();
 	friendList[0][0] = response.authResponse.userID;
 	accessToken = response.authResponse.accessToken;
-	FB.api( '/' + friendList[nFrSelected][0] + '/albums?fields=name,id,cover_photo',  function(albums) {
-		for (var i=0; i < albums.data.length; i++){
-			fbList[i] = [albums.data[i].id, albums.data[i].name, albums.data[i].cover_photo];
+	window.firstGetAlbum = true;
+	getAlbums(alParams);
+}
+function orderFbList () { // sort albums: [Profile, 2,3,4..., Timeline, Cover]
+	var a, y, z, ar = [];
+	$.each( fbList, function (i, v) {
+		switch(v.type){
+			case 'profile': a = v; break;
+			case 'wall': y = v; break;
+			case 'cover': z = v; break;
+			default: ar.push(v);
 		}
-		$loader.hide();
-		$loadingAlbums.show();
-		$('#infoLoad2').text(albums.data.length);
-		//Ordenar lista de albums: [Profile, 2,3,4..., Timeline, Cover]
-		var i0, i1, i2;
-		$.each(fbList, function (i, v) {
-			if(v[1]=='Profile Pictures'){i0 = i;}
-			else if(v[1]=='Timeline Photos'){i1 = i;}
-			else if(v[1]=='Cover Photos'){i2 = i;}
-		})
-		fbList.swap(i0, 0);
-		fbList.swap(i1, fbList.length-2);
-		fbList.swap(i2, fbList.length-1);
-
-		// getPhotos('/photos?fields=id,source,width,height&limit=25');
+	});
+	ar.unshift(a); ar.push(y,z);
+	fbList = ar;
+}
+function getAlbums (params) {
+	FB.api( '/' + friendList[nFrSelected][0] + params,  function(albums) {
+		if(firstGetAlbum){
+			firstGetAlbum = false;
+			$loader.hide();
+			$loadingAlbums.show();
+			$('#infoLoad2').text(albums.data.length);
+		}
+		if (albums.data && albums.data.length){ 
+			fbList.concat(albums.data);
+			if (albums.paging && albums.paging.next){ // next page
+				getAlbums(alParams+'&after='+albums.paging.cursors.after);}
+			else { // no more pages
+				orderFbList();
+				getPhotos(phParams);
+			}
+		} else { alert('connection error');}
 	});
 }
 //Saca fotos
-var nAl = 0;
-function getPhotos(urlParams){
+function getPhotos(params){
 	if(nAl < fbList.length){
-		FB.api('/'+fbList[nAl][0]+urlParams, function(photos){
-			if (photos && photos.data && photos.data.length){
-				if(!fbList[nAl][3]) {fbList[nAl][3] = new Array();}
-				var le = fbList[nAl][3].length;
-				for (j = 0; j < photos.data.length; j++){
-					if(fbList[nAl][2] == photos.data[j].id){fbList[nAl][2] = modUrl(photos.data[j].source,"p100x100");}
-					fbList[nAl][3][le+j] = new Array();
-					fbList[nAl][3][le+j][0] = modUrl(photos.data[j].source,"s320x320");
-					if(photos.data[j].width >= photos.data[j].height){
-						fbList[nAl][3][le+j][1] = 320;
-						fbList[nAl][3][le+j][2] = Math.floor((320/photos.data[j].width)*photos.data[j].height);
-					}else{
-						fbList[nAl][3][le+j][1] = Math.floor((320/photos.data[j].height)*photos.data[j].width);
-						fbList[nAl][3][le+j][2] = 320;
-					}
+		FB.api('/'+fbList[nAl][0]+params, function(photos){
+			if (photos.data && photos.data.length){
+				if (!fbList[nAl][3]) {fbList[nAl][3] = [];} // if new photo request otherwise it's paging
+				for (var i = 0, photo, ar, w, h; i < photos.data.length; i++){
+					photo = photos.data[i];
+					//if it's album cover save url
+					if (fbList[nAl][2] == photo.id){ fbList[nAl][2] = modUrl(photo.source,"p100x100");}
+					ar = []; w = photo.width; h = photo.height;
+					ar[0] = modUrl(photo.source,"s320x320");
+					//Resize photo size to fit 320x320
+					if(w >= h){ar[1] = 320; ar[2] = Math.floor((320/w)*h);}
+					else{ar[1] = Math.floor((320/h)*w); ar[2] = 320;}
+					fbList[nAl][3].push(ar); // save photo data to album item
 				}
-				if(photos.paging && photos.paging.next){
-					getPhotos('/photos?fields=id,source,width,height&limit=25&after='+photos.paging.cursors.after);
-				}else{
+				if (photos.paging && photos.paging.next){
+					getPhotos(phParams+'&after='+photos.paging.cursors.after);
+				} else {
 					nAl++;
 					$('#infoLoad1').text(nAl);
-					getPhotos('/photos?fields=id,source,width,height&limit=25');
+					getPhotos(phParams);
 				}
-			}else{
-				if(photos.data.length==0){ // Si no hay fotos borrar el album
-					fbList.splice(nAl,1); 
-					nAl--;
-					$('#infoLoad2').text(parseInt(albums.data.length)-1);
-				}
+			} else {
 				nAl++;
 				$('#infoLoad1').text(nAl);
-				getPhotos('/photos?fields=id,source,width,height&limit=25');
+				getPhotos(phParams);
 			}
 		});
-	}
-	else{
-		if(newFriend == 1 && !fbListSaved) {AllFbList.push({ fbList:fbList, id:friendList[nFrSelected][0], name:friendList[nFrSelected][1] });}
-		makelist();
+	} else {
+		// if (newFriend == 1 && !fbListSaved) {
+		// 	allFbList.push({ fbList:fbList, id:friendList[nFrSelected][0], name:friendList[nFrSelected][1] });
+		// }
+		makeList();
 	}
 }
 
 //Crea la lista de fotos
-var list = new Array();
-function makelist(){
-	for (var i = 0; i < fbList.length - 2; i++) {
-			for (var j = 0; j < fbList[i][3].length; j++) {
-				list.push(fbList[i][3][j]);
-			};
-		};
-		list.shuffle(); //Desordena la lista
-		Superlist();
+var list = []; // to save photos data (url, width, height, final position x, y and rotation)
+function makeList(){
+	for (var i = 0; i < fbList.length - 2; i++) { // Initially without two last albums
+		for (var j = 0; j < fbList[i][3].length; j++) {
+			list.push(fbList[i][3][j]);
+		}
+	}
+	list.shuffle(); //Desordena la lista
+	extendList();
 }
 
 //Genera posicion y rotacion final
-var n = 0; //numero de foto 0
-function Superlist(){
+function extendList(){
 	var cw = -1; //multiplicador de rotacion(hacia la derecha= -1, hacia la izq = 1)(ClockWise)
 	var maxfilas = Math.floor(window.innerHeight/300);
 	var fila = 1; //numero de fila
 	var entre = 0; //entre, distancia en que se juntan las fotos
+	var n = 0; //numero de foto 0
 	var n0 = 0; //el numero de la primera foto de una nueva capa
 	var Y = Math.floor((window.innerHeight%300)/2); //posicion Y final (comienza en la foto 1)
 	var X = -entre/2; //posicion X final (comienza en la foto 1)
-	while(n<list.length){ //genera las posiciones X Y finales de cada foto
+	while ( n < list.length ){ //genera las posiciones X Y finales de cada foto
 		var Rotfin = (Math.floor(Math.random()*20) + 5)*cw; // Genera rotacion de (-25 a -5)  o de (5 a 25)
 		list[n][3] = X; list[n][4] = Y; list[n][5] = Rotfin; //Guarda posicion y rotacion
 		n++; X += list[n-1][1] - entre; cw = -cw; //Prepara para la siguiente foto
@@ -476,36 +470,40 @@ function Superlist(){
 		}else{ list.shuffle(n0, n-1); // ultima foto
 		}
 	}
-	n = 0;
 	$loader.hide();
 	$loadingAlbums.hide();
-	if ( !$('#play').hasClass('paused') ) {playBtn_isPause();}
+	$('#play').each(function () {
+		this.style.display = '';
+		if ( !this.classList.contains('flipped') ) {this.dataset.title = 'Pause animation'; this.classList.add('flipped');}
+	})
 	$('#restart').show();
 	$('#friends').show();
 	newPic();
 	// Cargar cover de albums para escojer por primera vez y por cada amigo
-	if(newFriend == 1) { loadAlbumChoose(); newFriend = 0; }
+	// if(newFriend == 1) { loadAlbumChoose(); newFriend = 0; }
 	$('#filterAlbum').show();
 
 }
 var context, Dimg, img, Xini, Xfin, Yini, Yfin, Rotfin;
+var nPhoto = 0;
 function newPic(event){
-	if(n < list.length && (n==0 || event.propertyName == "left" || event.type == "error")){
+	// if(nPhoto < list.length && (nPhoto==0 || event.propertyName == "left" || event.type == "error")){
+	if(nPhoto < list.length){
 		//Variables
-		Rotfin = list[n][5];
+		Rotfin = list[nPhoto][5];
 		var CW = Rotfin/Math.abs(Rotfin); //Clockwise = 1, CCW = -1
 		var Rotini = Rotfin - 20*CW;
-		Xfin = list[n][3];
+		Xfin = list[nPhoto][3];
 		Xini = Xfin - 300*CW;
-		Yfin = list[n][4];
+		Yfin = list[nPhoto][4];
 		Yini = Yfin - window.innerHeight - 50;
 
 		//Insertar contenedor de imagen
 		Dimg = document.createElement('div');
 		Dimg.style.left = Xini + "px";
 		Dimg.style.top = Yini + "px";
-		Dimg.style.width = list[n][1] + "px";
-		Dimg.style.height = list[n][2] + "px";
+		Dimg.style.width = list[nPhoto][1] + "px";
+		Dimg.style.height = list[nPhoto][2] + "px";
 		Dimg.style.transform = "rotate("+Rotini+"deg)";
 		Dimg.style.webkitTransform = "rotate("+Rotini+"deg)";
 		Dimg.addEventListener('transitionend', newPic, false);
@@ -522,14 +520,14 @@ function newPic(event){
 		img = new Image();
 		img.addEventListener('load', onLoadImg, false);
 		img.addEventListener('error', newPic, false);
-		img.src = list[n][0];
+		img.src = list[nPhoto][0];
 
 		Dimg.appendChild(canvas);
 		Dimg.appendChild(img);
 		$container.append(Dimg);
 
 		//Avance
-		n++;
+		nPhoto++;
 	}
 }
 function onLoadImg(){
@@ -572,11 +570,11 @@ $('#fullScreen').click( function () {
 	this.style.pointerEvents = 'none';
 	if (this.classList.contains('flipped')){ // go normal screen
 		normalScreen();
-		this.dataset.title = 'Exit fullscreen';
+		this.dataset.title = 'Go fullscreen';
 		this.classList.remove('flipped'); 
 	} else { // go fullscreen
 		fullScreen();
-		this.dataset.title = 'Go fullscreen';
+		this.dataset.title = 'Exit fullscreen';
 		this.classList.add('flipped'); 
 	}
 	this.style.pointerEvents = 'auto';
@@ -585,11 +583,11 @@ $('#polaroid').click( function () {
 	this.style.pointerEvents = 'none';
 	if (this.classList.contains('flipped')){ // go normal
 		noPolaroid();
-		this.dataset.title = 'Normal frame';
+		this.dataset.title = 'Polaroid frame';
 		this.classList.remove('flipped'); 
 	} else { // go polaroid
 		polaroid();
-		this.dataset.title = 'Polaroid frame';
+		this.dataset.title = 'Normal frame';
 		this.classList.add('flipped'); 
 	}
 	this.style.pointerEvents = 'auto';
@@ -611,17 +609,14 @@ $(document).ready(function() {
 		FB.init({
 			// appId	: '100308213652145',
 			appId	: '100543873628579', // Test app
-			xfbml	: false,
+			xfbml	: true,
 			status	: true,
 			cookie	: true,
 			version	: 'v2.4'
 		});
 		FB.getLoginStatus( function(response) {
 			if (response.status === 'connected') { appInit(response);} // User connected to fb and app
-			else{
-				$loader.hide();
-				$('#fbLoginBtn').show();
-			}
+			else{ $loader.hide(); $('#fbLoginBtn').show(); }
 		});
 	});
 });
