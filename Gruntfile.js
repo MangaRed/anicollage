@@ -82,7 +82,7 @@ module.exports = function(grunt) {
 					'js/functions/controls.js',
 					'js/functions/albumChoose.js',
 					'js/functions/friendChoose.js',
-					'js/functions/app.js',
+					'js/app.js'
 				],
 				dest : 'js/app.min.js'
 			}

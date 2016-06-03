@@ -40,7 +40,7 @@
 	<div id="loadingAlbums" style="display:none">Loaded <span id="infoLoad1">0</span> of <span id="infoLoad2">0</span> albums </div>
 	<script src="js/jquery-2.2.4.min.js"></script>
 	<?php if ($productionState) { ?>
-		<script src="js/app.min.71557e160d8e8209379670d17a0e40eb.js"></script>
+		<script src="js/app.min.560be4657f077f19e25a0909410b770c.js"></script>
 	<?php } else { ?>
 		<script src="js/functions/helpers.js"></script>
 		<script src="js/functions/controls.js"></script>
