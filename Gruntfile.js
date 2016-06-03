@@ -97,11 +97,10 @@ module.exports = function(grunt) {
 				},
 				style: {
 					options: { grepFiles: 'index.php' },
-					src: '<%= cssmin.app.dest %>'
-				},
-				js : {
-					options: { grepFiles: 'index.php' },
-					src: '<%= uglify.app.dest %>'
+					src: [
+						'<%= cssmin.app.dest %>',
+						'<%= uglify.app.dest %>'
+					]
 				}
 		}
 	});
