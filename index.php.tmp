@@ -11,7 +11,7 @@
 	<meta name="keywords" content="collage, animated, facebook, photos, friends">
 	<link rel="icon" type="image/png" href="favicon.png" sizes="96x96">
 	<?php if ($productionState) { ?>
-		<link rel="stylesheet" href="style.min.css">
+		<link rel="stylesheet" href="style.min.0a03d428a53c8553bd0d29838ec0d852.css">
 	<?php } else { ?>
 		<link rel="stylesheet" href="style.css">
 	<?php } ?>
@@ -40,7 +40,7 @@
 	<div id="loadingAlbums" style="display:none">Loaded <span id="infoLoad1">0</span> of <span id="infoLoad2">0</span> albums </div>
 	<script src="js/jquery-2.2.4.min.js"></script>
 	<?php if ($productionState) { ?>
-		<script src="js/functions/app.min.js"></script>
+		<script src="js/functions/app.min.71557e160d8e8209379670d17a0e40eb.js"></script>
 	<?php } else { ?>
 		<script src="js/functions/helpers.js"></script>
 		<script src="js/functions/controls.js"></script>

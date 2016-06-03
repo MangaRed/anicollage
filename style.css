@@ -178,7 +178,7 @@ body{
 	padding: 8px;
 	border-radius: 6px;
 	background-size: 80%;
-	background-image: url(img/sprites.png);
+	background-image: url(img/sprites.ef5a78970e0003f4a662dcac4223a18a.png);
 	background-size: auto;
 }
 #controls>div:hover { background-color: #666;}
@@ -237,7 +237,7 @@ body{
 	padding: 8px; 
 	border-radius: 9px;
 	box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.4);
-	background-image: url(img/sprites.png);
+	background-image: url(img/sprites.ef5a78970e0003f4a662dcac4223a18a.png);
 	background-size: auto;
 	background-color: rgba(255, 255, 255, 0.33);
 	background-position: 0px 0px;
