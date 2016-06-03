@@ -29,7 +29,11 @@
 <div id="toggleControls"></div>
 <div id="loader"></div>
 <div id="loadingAlbums" style="display:none">Loaded <span id="infoLoad1">0</span> of <span id="infoLoad2">0</span> albums </div>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script src="app.js"></script>
+<script src="js/jquery-2.2.4.min.js"></script>
+<script src="js/functions/helpers.js"></script>
+<script src="js/functions/controls.js"></script>
+<script src="js/functions/albumChoose.js"></script>
+<script src="js/functions/friendChoose.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
