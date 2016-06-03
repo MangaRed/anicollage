@@ -1,5 +1,5 @@
 <?php 
-	$productionState = strpos($_SERVER['HTTP_HOST'], 'localhost') === false;
+	$productionState = $_SERVER['HTTP_HOST'] !== 'www.anicollage.com';
 	echo "<script>var productionState = ".json_encode($productionState)."</script>";
 ?>
 <!DOCTYPE html>
