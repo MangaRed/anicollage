@@ -84,7 +84,7 @@ module.exports = function(grunt) {
 					'js/functions/friendChoose.js',
 					'js/functions/app.js',
 				],
-				dest : 'panel/resources/js/app.min.js'
+				dest : 'js/app.min.js'
 			}
 		},
 		versioning: {

@@ -288,19 +288,35 @@ $('#friends').click( function () {
 });
 //--------------------EXECUTIONS---------------------
 // Facebook connect
-$(document).ready(function() {
-	$.ajaxSetup({ cache: true });
-	$.getScript('//connect.facebook.net/en_US/'+(productionState ? 'sdk.js' : 'sdk/debug.js'), function(){
-		FB.init({
-			appId	: (productionState ? '640362006115757' : '640370879448203'), //production and test
-			xfbml	: true,
-			status	: true,
-			cookie	: true,
-			version	: 'v2.6'
-		});
-		FB.getLoginStatus( function(response) {
-			if (response.status === 'connected') { appInit(response);} // User connected to fb and app
-			else{ $loader.hide(); $('#fbLoginBtn').show(); } //not connected, show login
-		});
-	});
-});
+// $(document).ready(function() {
+// 	$.ajaxSetup({ cache: true });
+// 	$.getScript('//connect.facebook.net/en_US/'+(productionState ? 'sdk.js' : 'sdk/debug.js'), function(){
+// 		FB.init({
+// 			appId	: (productionState ? '640362006115757' : '640370879448203'), //production and test
+// 			xfbml	: true,
+// 			status	: true,
+// 			cookie	: true,
+// 			version	: 'v2.6'
+// 		});
+// 		FB.getLoginStatus( function(response) {
+// 			if (response.status === 'connected') { appInit(response);} // User connected to fb and app
+// 			else{ $loader.hide(); $('#fbLoginBtn').show(); } //not connected, show login
+// 		});
+// 	});
+// });
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : (productionState ? '640362006115757' : '640370879448203'), //production and test
+      xfbml      : true,
+      version    : 'v2.6'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>

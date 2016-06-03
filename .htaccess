@@ -1,7 +1,7 @@
 # No mostrar contenidos de todos los subdirectorios
 Options -Indexes
 
-ErrorDocument /404.php
+ErrorDocument 404 	/404.php
 # Ocultar archivos privados
 RewriteEngine On
 RewriteRule ^(Gruntfile\.js)$		404.php [L]
