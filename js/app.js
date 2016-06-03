@@ -287,20 +287,20 @@ $('#friends').click( function () {
 	this.style.pointerEvents = 'auto';
 });
 //--------------------EXECUTIONS---------------------
+// Facebook connect
 $(document).ready(function() {
 	$.ajaxSetup({ cache: true });
-	$.getScript('//connect.facebook.net/en_US/sdk.js', function(){
+	$.getScript('//connect.facebook.net/en_US/'+(productionState ? 'sdk.js' : 'sdk/debug.js'), function(){
 		FB.init({
-			appId	: '100308213652145',
-			// appId	: '100543873628579', // Test app
+			appId	: (productionState ? '640362006115757' : '640370879448203'), //production and test
 			xfbml	: true,
 			status	: true,
 			cookie	: true,
-			version	: 'v2.4'
+			version	: 'v2.6'
 		});
 		FB.getLoginStatus( function(response) {
 			if (response.status === 'connected') { appInit(response);} // User connected to fb and app
-			else{ $loader.hide(); $('#fbLoginBtn').show(); }
+			else{ $loader.hide(); $('#fbLoginBtn').show(); } //not connected, show login
 		});
 	});
 });

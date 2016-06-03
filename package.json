@@ -1,0 +1,24 @@
+{
+  "name": "anicollage",
+  "version": "1.0.0",
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-csslint": "^1.0.0",
+    "grunt-contrib-cssmin": "^1.0.1",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-newer": "^1.2.0",
+    "grunt-version-assets": "^1.1.0"
+  },
+  "jshintConfig": {
+    "strict": false,
+    "sub": true,
+    "undef": false,
+    "unused": false,
+    "funcscope": true,
+    "shadow": true,
+    "-W041": false,
+    "expr": true,
+    "supernew": true
+  }
+}
